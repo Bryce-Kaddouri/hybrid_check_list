@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "455824777024",
+    "project_id": "hybrid-check-list",
+    "storage_bucket": "hybrid-check-list.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455824777024:android:801789b1319a035c6b64a5",
+        "android_client_info": {
+          "package_name": "com.example.hybrid_check_list"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3Dmr9DrMg82W9JYV9IB056Anmbm3CIcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
