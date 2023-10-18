@@ -1,10 +1,11 @@
 // models/task.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class Task {
-  final String id;
-  final Timestamp createdAt;
-  final Timestamp updatedAt;
+  final int id;
+  final int createdAt;
+  final int updatedAt;
   final String title;
   final String description;
   bool isCompleted = false;
@@ -12,23 +13,22 @@ class Task {
   Task(this.id, this.createdAt, this.updatedAt, this.title, this.description,
       this.isCompleted);
 
-  Task.fromMap(Map<String, dynamic> data, String id)
-      : this(
-          id,
-          data['createdAt'],
-          data['updatedAt'],
-          data['title'],
-          data['description'],
-          data['isCompleted'],
-        );
+  Map<String, dynamic> toMapFireStore() => {
+        'id': id,
+        'createdAt': Timestamp.fromMillisecondsSinceEpoch(createdAt * 1000),
+        'updatedAt': Timestamp.fromMillisecondsSinceEpoch(updatedAt * 1000),
+        'title': title,
+        'description': description,
+        'isCompleted': isCompleted,
+      };
 
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toMapSqlite() => {
         'id': id,
         'createdAt': createdAt,
         'updatedAt': updatedAt,
         'title': title,
         'description': description,
-        'isCompleted': isCompleted,
+        'isCompleted': isCompleted ? 1 : 0,
       };
 
   @override

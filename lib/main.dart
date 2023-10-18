@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hybrid_check_list/models/task.dart';
 import 'package:hybrid_check_list/services/connectivity_service.dart';
 import 'package:hybrid_check_list/services/cron_service.dart';
 import 'package:hybrid_check_list/view/task_list_view.dart';
@@ -10,10 +13,20 @@ import 'package:sqlite3/sqlite3.dart' as sql;
 import 'package:hybrid_check_list/services/firestore_service.dart';
 import 'package:hybrid_check_list/services/sql_service.dart';
 
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirestoreService.init();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  DatabaseHelper databaseHelper = DatabaseHelper.instance;
+  await databaseHelper.initDatabase();
+
+/*
   SqlService().initDB();
+*/
+
   CronService.init();
 
   runApp(const MyApp());

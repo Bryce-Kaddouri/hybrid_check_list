@@ -11,18 +11,16 @@ class TaskViewModel extends ChangeNotifier {
 
   // Business logic to fetch tasks, update tasks, etc.
   void fetchTasks() async {
-    // check if has internet
     if (await ConnectivityService().hasInternet) {
-      // fetch tasks from firestore
       tasks = await FirestoreService().getTasks();
-      notifyListeners(); // Notify listeners to rebuild the UI
     } else {
-      // fetch tasks from sqlite
-      tasks = SqlService.getTasks();
-      // notifyListeners(); // Notify listeners to rebuild the UI
-    }
+      final DatabaseHelper databaseHelper = DatabaseHelper.instance;
 
+      tasks = await databaseHelper.tasks();
+    }
+/*
     notifyListeners(); // Notify listeners to rebuild the UI
+*/
   }
 
   void toggleTaskCompletion(int index) {

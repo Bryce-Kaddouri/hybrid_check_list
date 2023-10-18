@@ -15,16 +15,56 @@ class FirestoreService {
     return _db!;
   }
 
-  static void init() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  Future<List<Task>> getTasks() async {
+    print('getTasks from firestore');
+    final data = await db.collection('tasks').get();
+    List<Task> tasks = data.docs.map((doc) {
+      int id = int.parse(doc.id);
+      Timestamp createdAt = doc['createdAt'];
+      int createdAtInt = createdAt.millisecondsSinceEpoch;
+      Timestamp updatedAt = doc['updatedAt'];
+      int updatedAtInt = updatedAt.millisecondsSinceEpoch;
+      String title = doc['title'];
+      String description = doc['description'];
+      bool isCompleted = doc['isCompleted'];
+      print('from firestore :');
+      print('id : $id');
+      print('createdAt : $createdAt');
+      print('createdAtInt : $createdAtInt');
+
+      print('updatedAt : $updatedAt');
+      print('title : $title');
+      print('description : $description');
+      print('isCompleted : $isCompleted');
+
+      return Task(
+        int.parse(doc.id),
+        createdAtInt,
+        updatedAtInt,
+        doc['title'],
+        doc['description'],
+        doc['isCompleted'],
+      );
+    }).toList();
+    print('tasks from firestore : $tasks');
+    return tasks;
   }
 
-  Future<List<Task>> getTasks() async {
-    final data = await db.collection('tasks').get();
-    List<Task> tasks =
-        data.docs.map((doc) => Task.fromMap(doc.data(), doc.id)).toList();
-    return tasks;
+  insertTask(Task task) {
+    print('insertTask to firestore');
+    db.collection('tasks').doc(task.id.toString()).set(task.toMapFireStore());
+  }
+
+  updateTask(Task task) {
+    print('updateTask to firestore');
+    db
+        .collection('tasks')
+        .doc(task.id.toString())
+        .update(task.toMapFireStore());
+  }
+
+  deleteTask(int id) {
+    print('deleteTask to firestore');
+    db.collection('tasks').doc(id.toString()).delete();
   }
 }
