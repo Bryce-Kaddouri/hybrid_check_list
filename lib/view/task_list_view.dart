@@ -29,12 +29,6 @@ class TaskListView extends StatelessWidget {
           );
         },
       ),
-      /*floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          viewModel.addTask();
-        },
-        child: Icon(Icons.add),
-      ),*/
     );
   }
 }

@@ -1,6 +1,7 @@
 // viewmodel/task_view_model.dart
 import 'package:flutter/foundation.dart';
 import 'package:hybrid_check_list/services/connectivity_service.dart';
+import 'package:hybrid_check_list/services/data_bridge_service.dart';
 import 'package:style_cron_job/style_cron_job.dart';
 import '../models/task.dart';
 import '../services/firestore_service.dart';
@@ -11,13 +12,16 @@ class TaskViewModel extends ChangeNotifier {
 
   // Business logic to fetch tasks, update tasks, etc.
   void fetchTasks() async {
-    if (await ConnectivityService().hasInternet) {
-      tasks = await FirestoreService().getTasks();
-    } else {
-      final DatabaseHelper databaseHelper = DatabaseHelper.instance;
-
-      tasks = await databaseHelper.tasks();
-    }
+    DataBridge dataBridge = DataBridge(
+      FirestoreService(),
+      DatabaseHelper.instance,
+    );
+    dataBridge.fetchTodoItems().then((value) {
+      print('fetchTasks from dataBridge');
+      print('value : $value');
+      tasks = value;
+      notifyListeners(); // Notify listeners to rebuild the UI
+    });
 /*
     notifyListeners(); // Notify listeners to rebuild the UI
 */

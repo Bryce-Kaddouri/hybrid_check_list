@@ -110,7 +110,7 @@ class CronService {
   }
 
   static void init() async {
-    var stream = each.minute.fromNowOn().asStream();
+    var stream = each.hour.fromNowOn().asStream();
     syncTasks();
 // eg starting 00:10:38
     stream.listen((time) {
