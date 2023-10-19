@@ -57,10 +57,9 @@ class FirestoreService {
 
   updateTask(Task task) {
     print('updateTask to firestore');
-    db
-        .collection('tasks')
-        .doc(task.id.toString())
-        .update(task.toMapFireStore());
+    Map<String, dynamic> taskMap = task.toMapFireStore();
+    print('taskMap : $taskMap');
+    db.collection('tasks').doc(task.id.toString()).update(taskMap);
   }
 
   deleteTask(int id) {

@@ -10,17 +10,6 @@ import 'dart:async';
 import 'sql_service.dart';
 import 'firestore_service.dart';
 
-enum CronStatus { running, stopped }
-
-enum Case {
-  insertSqlite,
-  updateSqlite,
-  deleteSqlite,
-  insertFirestore,
-  updateFirestore,
-  deleteFirestore
-}
-
 class CronService {
   static void syncTasks() async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -48,7 +37,8 @@ class CronService {
         for (Task taskFromSqlite in tasksFromSqlite) {
           if (taskFromFireStore.id == taskFromSqlite.id) {
             isTaskFound = true;
-            if (taskFromFireStore.updatedAt > taskFromSqlite.updatedAt) {
+            bool isTaskEqual = identical(taskFromFireStore, taskFromSqlite);
+            if (!isTaskEqual) {
               tasksToBeUpdatedToSqlite.add(taskFromFireStore);
             }
             break;
@@ -64,7 +54,12 @@ class CronService {
         for (Task taskFromFireStore in tasksFromFireStore) {
           if (taskFromSqlite.id == taskFromFireStore.id) {
             isTaskFound = true;
-            if (taskFromSqlite.updatedAt > taskFromFireStore.updatedAt) {
+            /*if (taskFromSqlite.updatedAt > taskFromFireStore.updatedAt) {
+              tasksToBeUpdatedToFirestore.add(taskFromSqlite);
+            }*/
+            // check if two tasks are equal
+            bool isTaskEqual = identical(taskFromSqlite, taskFromFireStore);
+            if (!isTaskEqual) {
               tasksToBeUpdatedToFirestore.add(taskFromSqlite);
             }
             break;

@@ -9,26 +9,30 @@ import '../services/sql_service.dart';
 
 class TaskViewModel extends ChangeNotifier {
   List<Task> tasks = [];
+  DataBridge dataBridge = DataBridge(
+    FirestoreService(),
+    DatabaseHelper.instance,
+  );
 
   // Business logic to fetch tasks, update tasks, etc.
   void fetchTasks() async {
-    DataBridge dataBridge = DataBridge(
-      FirestoreService(),
-      DatabaseHelper.instance,
-    );
     dataBridge.fetchTodoItems().then((value) {
       print('fetchTasks from dataBridge');
       print('value : $value');
       tasks = value;
       notifyListeners(); // Notify listeners to rebuild the UI
     });
-/*
-    notifyListeners(); // Notify listeners to rebuild the UI
-*/
   }
 
-  void toggleTaskCompletion(int index) {
-    tasks[index].isCompleted = !tasks[index].isCompleted;
+  void toggleTaskCompletion(int index, bool isCompleted) {
+    print('toooggg');
+    Task task = tasks[index];
+    task.isCompleted = task.isCompleted = isCompleted;
+    print(task.toString());
+
+    dataBridge.updateTask(task);
     notifyListeners(); // Notify listeners to rebuild the UI
+
+    // Notify listeners to rebuild the UI
   }
 }

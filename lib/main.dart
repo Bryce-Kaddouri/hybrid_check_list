@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hybrid_check_list/models/task.dart';
 import 'package:hybrid_check_list/services/connectivity_service.dart';
 import 'package:hybrid_check_list/services/cron_service.dart';
+import 'package:hybrid_check_list/services/secure_storage_service.dart';
 import 'package:hybrid_check_list/view/task_list_view.dart';
 import 'package:hybrid_check_list/viewmodel/task_view_model.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,26 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  ConnectivityService().hasInternetStream.listen((event) async {
+    print('hasInternetStream : $event');
+    if (await SecureStorageService().readSecureData('connectivity') == null) {
+      print('secure storage is null');
+      SecureStorageService().writeSecureData('connectivity', 'disconnected');
+    } else {
+      print('secure storage is not null');
+      String? connection =
+          await SecureStorageService().readSecureData('connectivity');
+      print('connection fron secure storage $connection');
+      print('connection from connectivity plus $event');
+
+      if (connection == 'disconnected' && event == true) {
+        CronService.syncTasks();
+        SecureStorageService().writeSecureData('connectivity', 'connected');
+      } else if (connection == 'connected' && event == false) {
+        SecureStorageService().writeSecureData('connectivity', 'disconnected');
+      }
+    }
+  });
   DatabaseHelper databaseHelper = DatabaseHelper.instance;
   await databaseHelper.initDatabase();
 

@@ -15,8 +15,8 @@ class Task {
 
   Map<String, dynamic> toMapFireStore() => {
         'id': id,
-        'createdAt': Timestamp.fromMillisecondsSinceEpoch(createdAt * 1000),
-        'updatedAt': Timestamp.fromMillisecondsSinceEpoch(updatedAt * 1000),
+        'createdAt': Timestamp.fromMillisecondsSinceEpoch(createdAt),
+        'updatedAt': Timestamp.fromMillisecondsSinceEpoch(updatedAt),
         'title': title,
         'description': description,
         'isCompleted': isCompleted,

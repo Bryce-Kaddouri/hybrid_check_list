@@ -39,11 +39,14 @@ class DataBridge {
   }
 
   Future<void> updateTask(Task task) async {
+    print('updateTask');
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.mobile ||
         connectivityResult == ConnectivityResult.wifi) {
       // If there's an internet connection, update data to Firestore
+      print('updateTask from firestore');
+      print(task.toString());
       firestoreDataProvider.updateTask(task);
     } else {
       // If there's no internet connection, update data to Sqflite
