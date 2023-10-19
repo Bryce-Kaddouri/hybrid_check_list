@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:style_cron_job/style_cron_job.dart';
 import '../models/task.dart';
 import 'connectivity_service.dart';
@@ -22,89 +23,94 @@ enum Case {
 
 class CronService {
   static void syncTasks() async {
-    final tasksFromFireStore = await FirestoreService().getTasks();
+    var connectivityResult = await Connectivity().checkConnectivity();
 
-    final DatabaseHelper databaseHelper = DatabaseHelper.instance;
-    await databaseHelper.initDatabase();
+    if (connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi) {
+      final tasksFromFireStore = await FirestoreService().getTasks();
 
-    final tasksFromSqlite = await databaseHelper.tasks();
+      final DatabaseHelper databaseHelper = DatabaseHelper.instance;
+      await databaseHelper.initDatabase();
 
-    // compare tasks from firestore and sqlite
-    List<Task> tasksToBeInsertedToSqlite = [];
-    List<Task> tasksToBeUpdatedToSqlite = [];
-    List<Task> tasksToBeDeletedFromSqlite = [];
+      final tasksFromSqlite = await databaseHelper.tasks();
 
-    List<Task> tasksToBeInsertedToFirestore = [];
-    List<Task> tasksToBeUpdatedToFirestore = [];
-    List<Task> tasksToBeDeletedFromFirestore = [];
+      // compare tasks from firestore and sqlite
+      List<Task> tasksToBeInsertedToSqlite = [];
+      List<Task> tasksToBeUpdatedToSqlite = [];
+      List<Task> tasksToBeDeletedFromSqlite = [];
 
-    for (Task taskFromFireStore in tasksFromFireStore) {
-      bool isTaskFound = false;
-      for (Task taskFromSqlite in tasksFromSqlite) {
-        if (taskFromFireStore.id == taskFromSqlite.id) {
-          isTaskFound = true;
-          if (taskFromFireStore.updatedAt > taskFromSqlite.updatedAt) {
-            tasksToBeUpdatedToSqlite.add(taskFromFireStore);
-          }
-          break;
-        }
-      }
-      if (!isTaskFound) {
-        tasksToBeInsertedToSqlite.add(taskFromFireStore);
-      }
-    }
+      List<Task> tasksToBeInsertedToFirestore = [];
+      List<Task> tasksToBeUpdatedToFirestore = [];
+      List<Task> tasksToBeDeletedFromFirestore = [];
 
-    for (Task taskFromSqlite in tasksFromSqlite) {
-      bool isTaskFound = false;
       for (Task taskFromFireStore in tasksFromFireStore) {
-        if (taskFromSqlite.id == taskFromFireStore.id) {
-          isTaskFound = true;
-          if (taskFromSqlite.updatedAt > taskFromFireStore.updatedAt) {
-            tasksToBeUpdatedToFirestore.add(taskFromSqlite);
+        bool isTaskFound = false;
+        for (Task taskFromSqlite in tasksFromSqlite) {
+          if (taskFromFireStore.id == taskFromSqlite.id) {
+            isTaskFound = true;
+            if (taskFromFireStore.updatedAt > taskFromSqlite.updatedAt) {
+              tasksToBeUpdatedToSqlite.add(taskFromFireStore);
+            }
+            break;
           }
-          break;
+        }
+        if (!isTaskFound) {
+          tasksToBeInsertedToSqlite.add(taskFromFireStore);
         }
       }
-      if (!isTaskFound) {
-        tasksToBeDeletedFromSqlite.add(taskFromSqlite);
-      }
-    }
 
-    print('tasksToBeInsertedToSqlite : $tasksToBeInsertedToSqlite');
-    print('tasksToBeUpdatedToSqlite : $tasksToBeUpdatedToSqlite');
-    print('tasksToBeDeletedFromSqlite : $tasksToBeDeletedFromSqlite');
+      for (Task taskFromSqlite in tasksFromSqlite) {
+        bool isTaskFound = false;
+        for (Task taskFromFireStore in tasksFromFireStore) {
+          if (taskFromSqlite.id == taskFromFireStore.id) {
+            isTaskFound = true;
+            if (taskFromSqlite.updatedAt > taskFromFireStore.updatedAt) {
+              tasksToBeUpdatedToFirestore.add(taskFromSqlite);
+            }
+            break;
+          }
+        }
+        if (!isTaskFound) {
+          tasksToBeDeletedFromSqlite.add(taskFromSqlite);
+        }
+      }
 
-    print('tasksToBeInsertedToFirestore : $tasksToBeInsertedToFirestore');
-    print('tasksToBeUpdatedToFirestore : $tasksToBeUpdatedToFirestore');
-    print('tasksToBeDeletedFromFirestore : $tasksToBeDeletedFromFirestore');
+      print('tasksToBeInsertedToSqlite : $tasksToBeInsertedToSqlite');
+      print('tasksToBeUpdatedToSqlite : $tasksToBeUpdatedToSqlite');
+      print('tasksToBeDeletedFromSqlite : $tasksToBeDeletedFromSqlite');
 
-    // check last status of internet that is stored in secure storage
-    print('tasks from firestore : $tasksFromFireStore');
-    print('tasks from sqlite : $tasksFromSqlite');
+      print('tasksToBeInsertedToFirestore : $tasksToBeInsertedToFirestore');
+      print('tasksToBeUpdatedToFirestore : $tasksToBeUpdatedToFirestore');
+      print('tasksToBeDeletedFromFirestore : $tasksToBeDeletedFromFirestore');
 
-    if (tasksToBeInsertedToSqlite.isNotEmpty) {
-      for (Task task in tasksToBeInsertedToSqlite) {
-        await databaseHelper.insertTask(task);
-      }
-    } else if (tasksToBeUpdatedToSqlite.isNotEmpty) {
-      for (Task task in tasksToBeUpdatedToSqlite) {
-        await databaseHelper.updateTask(task);
-      }
-    } else if (tasksToBeDeletedFromSqlite.isNotEmpty) {
-      for (Task task in tasksToBeDeletedFromSqlite) {
-        await databaseHelper.deleteTask(task.id);
-      }
-    } else if (tasksToBeInsertedToFirestore.isNotEmpty) {
-      for (Task task in tasksToBeInsertedToFirestore) {
-        await FirestoreService().insertTask(task);
-      }
-    } else if (tasksToBeUpdatedToFirestore.isNotEmpty) {
-      for (Task task in tasksToBeUpdatedToFirestore) {
-        await FirestoreService().updateTask(task);
-      }
-    } else if (tasksToBeDeletedFromFirestore.isNotEmpty) {
-      for (Task task in tasksToBeDeletedFromFirestore) {
-        await FirestoreService().deleteTask(task.id);
+      // check last status of internet that is stored in secure storage
+      print('tasks from firestore : $tasksFromFireStore');
+      print('tasks from sqlite : $tasksFromSqlite');
+
+      if (tasksToBeInsertedToSqlite.isNotEmpty) {
+        for (Task task in tasksToBeInsertedToSqlite) {
+          await databaseHelper.insertTask(task);
+        }
+      } else if (tasksToBeUpdatedToSqlite.isNotEmpty) {
+        for (Task task in tasksToBeUpdatedToSqlite) {
+          await databaseHelper.updateTask(task);
+        }
+      } else if (tasksToBeDeletedFromSqlite.isNotEmpty) {
+        for (Task task in tasksToBeDeletedFromSqlite) {
+          await databaseHelper.deleteTask(task.id);
+        }
+      } else if (tasksToBeInsertedToFirestore.isNotEmpty) {
+        for (Task task in tasksToBeInsertedToFirestore) {
+          await FirestoreService().insertTask(task);
+        }
+      } else if (tasksToBeUpdatedToFirestore.isNotEmpty) {
+        for (Task task in tasksToBeUpdatedToFirestore) {
+          await FirestoreService().updateTask(task);
+        }
+      } else if (tasksToBeDeletedFromFirestore.isNotEmpty) {
+        for (Task task in tasksToBeDeletedFromFirestore) {
+          await FirestoreService().deleteTask(task.id);
+        }
       }
     }
   }
